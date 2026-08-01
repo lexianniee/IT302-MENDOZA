@@ -1,0 +1,12 @@
+[user]
+	name = Your Name
+	email = you@example.com
+[init]
+	defaultBranch = main
+[core]
+	autocrlf = input
+	editor = vim
+[push]
+	default = simple
+[pull]
+	rebase = false

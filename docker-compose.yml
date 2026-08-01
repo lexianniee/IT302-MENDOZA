@@ -1,0 +1,81 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./app:/var/www/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - php
+    networks:
+      - it302_network
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/var/www/html
+      - ./php/conf.d:/usr/local/etc/php/conf.d
+    networks:
+      - it302_network
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: it302_mendoza
+      MYSQL_DATABASE: it302_mendoza
+      MYSQL_USER: it302_mendoza
+      MYSQL_PASSWORD: it302_mendoza
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - it302_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+    depends_on:
+      - mysql
+    networks:
+      - it302_network
+
+  workspace:
+    image: devilbox/php-fpm:8.2-work
+    volumes:
+      - ./app:/var/www/html
+      - ./workspace:/home/workspace
+    tty: true
+    networks:
+      - it302_network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+    networks:
+      - it302_network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - it302_network
+
+networks:
+  it302_network:
+    name: it302_network
+    driver: bridge
